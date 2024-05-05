@@ -25,7 +25,7 @@ function addTask(e) {
     document.getElementById('task-content').value = '';
     const transaction = db.transaction(["tasks"], "readwrite");
     const store = transaction.objectStore("tasks");
-    store.add({ content, status: 1 }).onsuccess = () => {
+    store.add({ content }).onsuccess = () => {
         loadTasks();
     };
 }
@@ -38,35 +38,42 @@ function loadTasks() {
     tasksList.innerHTML = '';
 
     cursor.onsuccess = function(event) {
-        const cursor = event.target.result;
+        var cursor = event.target.result;
         if (cursor) {
-            if (cursor.value.status === 1) {  // Solo mostrar tareas con estado 1
-                const li = document.createElement('li');
-                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                li.textContent = cursor.value.content;
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.textContent = cursor.value.content;
 
-                const actionContainer = document.createElement('div');
+            const actionContainer = document.createElement('div');
 
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Editar';
-                editButton.className = 'btn btn-outline-primary btn-sm';
-                editButton.onclick = () => showEditTask(cursor.key, cursor.value.content);
-                actionContainer.appendChild(editButton);
+            // Botón de edición
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Editar';
+            editButton.className = 'btn btn-outline-primary btn-sm';
+            editButton.onclick = (function(id, content) {
+                return function() {
+                    showEditTask(id, content);
+                };
+            })(cursor.key, cursor.value.content); // Captura el id y contenido actual
+            actionContainer.appendChild(editButton);
 
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.className = 'btn btn-outline-danger btn-sm';
-                deleteButton.onclick = () => deleteTask(cursor.key);
-                actionContainer.appendChild(deleteButton);
+            // Botón de eliminación
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.className = 'btn btn-outline-danger btn-sm';
+            deleteButton.onclick = (function(id) {
+                return function() {
+                    deleteTask(id);
+                };
+            })(cursor.key);
+            actionContainer.appendChild(deleteButton);
 
-                li.appendChild(actionContainer);
-                tasksList.appendChild(li);
-            }
+            li.appendChild(actionContainer);
+            tasksList.appendChild(li);
             cursor.continue();
         }
     };
 }
-
 
 function showEditTask(id, content) {
     document.getElementById('edit-task-id').value = id;
@@ -79,30 +86,17 @@ function updateTask() {
     const content = document.getElementById('edit-task-content').value;
     const transaction = db.transaction(["tasks"], "readwrite");
     const store = transaction.objectStore("tasks");
-    const request = store.get(id);
-
-    request.onsuccess = () => {
-        const data = request.result;
-        data.content = content;  // Actualizar el contenido
-        // El estado (status) se mantiene, no necesitamos modificarlo aquí
-        store.put(data).onsuccess = () => {
-            loadTasks();
-            toggleEditCard(false);
-        };
+    store.put({ id, content }).onsuccess = () => {
+        loadTasks();
+        toggleEditCard(false);
     };
 }
-
 
 function deleteTask(id) {
     const transaction = db.transaction(["tasks"], "readwrite");
     const store = transaction.objectStore("tasks");
-    const request = store.get(id);
-    request.onsuccess = () => {
-        const data = request.result;
-        data.status = 0;  // Cambiar el estado a "eliminado"
-        store.put(data).onsuccess = () => {
-            loadTasks();
-        };
+    store.delete(id).onsuccess = () => {
+        loadTasks();
     };
 }
 
