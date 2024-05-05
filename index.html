@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        #edit-task-card {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 900; /* Menor que la tarjeta de edición pero suficiente para cubrir el contenido */
+        }
+    </style>
+</head>
+<body>
+    <main class="container p-4">
+        <h1 class="display-4 text-center title mt-4">ToDo List</h1>
+        <div class="row">
+            <div class="col-md-6 offset-md-3 my-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <form id="task-form">
+                            <div class="input-group mb-3">
+                                <input type="text" placeholder="Nueva tarea" id="task-content" class="form-control" autofocus required>
+                                <button class="btn btn-outline-light" type="submit">Agregar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush" id="task-list">
+                            <!-- Las tareas serán insertadas aquí -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Tarjeta Flotante para Edición de Tarea -->
+    <div id="edit-task-card" class="card">
+        <div class="card-body">
+            <h5 class="card-title">Editar Tarea</h5>
+            <input type="hidden" id="edit-task-id">
+            <input type="text" id="edit-task-content" class="form-control">
+            <button onclick="updateTask()" class="btn btn-success mt-2">Guardar</button>
+            <button onclick="toggleEditCard(false)" class="btn btn-secondary mt-2">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
